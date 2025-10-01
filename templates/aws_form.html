@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração AWS - Air Quality Classifier</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 25px;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 10px 15px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(-5px);
+        }
+
+        .card {
+            background: white;
+            border-radius: 25px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            animation: fadeIn 0.6s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 12px;
+            font-size: 2.2em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 15px;
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
+
+        .steps-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 35px;
+        }
+
+        .step {
+            width: 40px;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .alert {
+            padding: 18px 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: start;
+            gap: 12px;
+            animation: slideInDown 0.4s ease-out;
+        }
+
+        .alert-icon {
+            font-size: 1.5em;
+            flex-shrink: 0;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d1fae5 0%, #d1f4e0 100%);
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .credentials-helper {
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            border: 2px dashed #d1d5db;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .credentials-helper:hover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+        }
+
+        .credentials-helper h3 {
+            color: #1f2937;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .credentials-helper ol {
+            margin-left: 20px;
+            color: #4b5563;
+            line-height: 2;
+        }
+
+        .credentials-helper li {
+            margin-bottom: 10px;
+        }
+
+        .credentials-helper code {
+            background: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #667eea;
+            border: 1px solid #e5e7eb;
+        }
+
+        .form-section {
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: #374151;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .required {
+            color: #ef4444;
+            font-size: 1.2em;
+        }
+
+        .optional-badge {
+            background: #f3f4f6;
+            color: #6b7280;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        input.error {
+            border-color: #ef4444;
+        }
+
+        input.success {
+            border-color: #10b981;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+        }
+
+        .help-text {
+            font-size: 0.85em;
+            color: #6b7280;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #f3f4f6;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-test {
+            width: 100%;
+            background: white;
+            color: #10b981;
+            border: 2px solid #10b981;
+            margin-bottom: 15px;
+        }
+
+        .btn-test:hover:not(:disabled) {
+            background: #10b981;
+            color: white;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid currentColor;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .connection-status {
+            display: none;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .connection-status.show {
+            display: block;
+            animation: slideInDown 0.4s ease-out;
+        }
+
+        .connection-status.success {
+            background: linear-gradient(135deg, #d1fae5 0%, #d1f4e0 100%);
+            color: #065f46;
+        }
+
+        .connection-status.error {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                padding: 30px 25px;
+            }
+
+            .btn-group {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">
+            <span>←</span>
+            <span>Voltar ao Dashboard</span>
+        </a>
+        
+        <div class="card">
+            <div class="header-section">
+                <div class="header-icon">⚙️</div>
+                <h1>Configuração AWS</h1>
+                <p class="subtitle">Configure suas credenciais AWS para armazenar os dados de qualidade do ar no Amazon S3</p>
+                <div class="steps-indicator">
+                    <div class="step active"></div>
+                    <div class="step" id="step2"></div>
+                    <div class="step" id="step3"></div>
+                </div>
+            </div>
+
+            <div class="credentials-helper">
+                <h3>📚 Como obter credenciais do AWS Academy Learner Lab</h3>
+                <ol>
+                    <li>Acesse seu <strong>AWS Academy Learner Lab</strong></li>
+                    <li>Clique no botão <code>AWS Details</code> no canto superior direito</li>
+                    <li>Clique em <code>Show</code> ao lado de "AWS CLI:"</li>
+                    <li>Copie as credenciais e cole nos campos abaixo</li>
+                    <li>⚠️ <strong>Importante:</strong> As credenciais do Lab expiram periodicamente</li>
+                </ol>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <div id="connectionStatus" class="connection-status"></div>
+
+            <form id="awsForm">
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>🔑</span>
+                        <span>Credenciais de Acesso</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            AWS Access Key ID
+                            <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="text" 
+                                id="accessKey" 
+                                placeholder="Sua Access Key ID"
+                                required
+                            >
+                            <span class="input-icon" id="accessKeyIcon"></span>
+                        </div>
+                        <p class="help-text">💡 Chave de acesso fornecida pelo AWS Lab</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            AWS Secret Access Key
+                            <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="password" 
+                            id="secretKey" 
+                            placeholder="Sua secret key (será ocultada)"
+                            required
+                        >
+                        <p class="help-text">🔒 Mantida em sigilo - nunca compartilhe esta chave</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            AWS Session Token
+                            <span class="optional-badge">OPCIONAL</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="sessionToken" 
+                            placeholder="Token temporário (obrigatório para AWS Academy Lab)"
+                        >
+                        <p class="help-text">⏱️ Necessário apenas para labs temporários do AWS Academy</p>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>🌎</span>
+                        <span>Configurações de Região e Armazenamento</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Região AWS
+                            <span class="required">*</span>
+                        </label>
+                        <select id="region" required>
+                            <option value="us-east-1">US East (N. Virginia) - us-east-1</option>
+                            <option value="us-east-2">US East (Ohio) - us-east-2</option>
+                            <option value="us-west-1">US West (N. California) - us-west-1</option>
+                            <option value="us-west-2">US West (Oregon) - us-west-2</option>
+                            <option value="sa-east-1">South America (São Paulo) - sa-east-1</option>
+                            <option value="eu-west-1">Europe (Ireland) - eu-west-1</option>
+                            <option value="ap-southeast-1">Asia Pacific (Singapore) - ap-southeast-1</option>
+                        </select>
+                        <p class="help-text">🗺️ Escolha a região mais próxima para melhor performance</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Nome do Bucket S3
+                            <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="bucket" 
+                            placeholder="meu-bucket-aqi-data"
+                            required
+                        >
+                        <p class="help-text">🗄️ O bucket deve existir na região selecionada</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Prefixo dos Arquivos
+                            <span class="optional-badge">OPCIONAL</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="prefix" 
+                            value="raw"
+                            placeholder="raw"
+                        >
+                        <p class="help-text">📁 Pasta raiz onde os arquivos serão salvos (padrão: "raw")</p>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-test" id="testBtn" onclick="testConnection()">
+                    <span>🔍</span>
+                    <span>Testar Conexão</span>
+                </button>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="window.history.back()">
+                        <span>←</span>
+                        <span>Cancelar</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                        <span>✓</span>
+                        <span>Salvar e Conectar</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let connectionTested = false;
+
+        function showAlert(message, type = 'info') {
+            const container = document.getElementById('alertContainer');
+            const icons = {
+                info: 'ℹ️',
+                success: '✅',
+                error: '❌'
+            };
+
+            container.innerHTML = `
+                <div class="alert alert-${type}">
+                    <span class="alert-icon">${icons[type]}</span>
+                    <div>${message}</div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 6000);
+        }
+
+        function showConnectionStatus(success, message) {
+            const status = document.getElementById('connectionStatus');
+            status.className = `connection-status show ${success ? 'success' : 'error'}`;
+            status.innerHTML = `
+                <div style="font-size: 2em; margin-bottom: 10px;">${success ? '✅' : '❌'}</div>
+                <div>${message}</div>
+            `;
+
+            if (success) {
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('step2').classList.add('active');
+                connectionTested = true;
+            }
+        }
+
+        async function testConnection() {
+            const testBtn = document.getElementById('testBtn');
+            const originalText = testBtn.innerHTML;
+            
+            // Validar campos obrigatórios
+            const accessKey = document.getElementById('accessKey').value;
+            const secretKey = document.getElementById('secretKey').value;
+            const bucket = document.getElementById('bucket').value;
+
+            if (!accessKey || !secretKey || !bucket) {
+                showAlert('Por favor, preencha todos os campos obrigatórios antes de testar', 'error');
+                return;
+            }
+
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<span class="spinner"></span><span>Testando conexão...</span>';
+
+            const formData = {
+                aws_access_key_id: accessKey,
+                aws_secret_access_key: secretKey,
+                aws_session_token: document.getElementById('sessionToken').value || null,
+                aws_region: document.getElementById('region').value,
+                s3_bucket: bucket,
+                s3_prefix: document.getElementById('prefix').value
+            };
+
+            try {
+                const params = new URLSearchParams(formData);
+                const response = await fetch(`/api/aws/configure?${params}`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showConnectionStatus(true, '🎉 Conexão estabelecida com sucesso! Você pode salvar agora.');
+                } else {
+                    showConnectionStatus(false, `❌ Falha na conexão: ${data.detail || 'Erro desconhecido'}`);
+                }
+            } catch (error) {
+                showConnectionStatus(false, `❌ Erro ao testar conexão: ${error.message}`);
+            } finally {
+                testBtn.disabled = false;
+                testBtn.innerHTML = originalText;
+            }
+        }
+
+        document.getElementById('awsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!connectionTested) {
+                showAlert('Por favor, teste a conexão antes de salvar', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span><span>Salvando...</span>';
+
+            document.getElementById('step3').classList.add('active');
+
+            try {
+                showAlert('Configuração salva! Redirecionando para o dashboard...', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } catch (error) {
+                showAlert('Erro inesperado: ' + error.message, 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+
+        // Validação em tempo real do Access Key
+        document.getElementById('accessKey').addEventListener('input', (e) => {
+            const value = e.target.value;
+            const icon = document.getElementById('accessKeyIcon');
+            
+            if (!value) {
+                e.target.classList.remove('error', 'success');
+                icon.textContent = '';
+            } else if (value.length >= 16) {
+                e.target.classList.remove('error');
+                e.target.classList.add('success');
+                icon.textContent = '✓';
+                icon.style.color = '#10b981';
+            } else {
+                e.target.classList.remove('success');
+                e.target.classList.add('error');
+                icon.textContent = '!';
+                icon.style.color = '#ef4444';
+            }
+            
+            connectionTested = false;
+            document.getElementById('submitBtn').disabled = true;
+        });
+
+        // Reset teste de conexão quando campos mudarem
+        ['secretKey', 'sessionToken', 'region', 'bucket', 'prefix'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                connectionTested = false;
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('step2').classList.remove('active');
+                document.getElementById('step3').classList.remove('active');
+                
+                const status = document.getElementById('connectionStatus');
+                if (status.classList.contains('show')) {
+                    status.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
