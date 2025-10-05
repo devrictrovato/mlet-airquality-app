@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predição de Qualidade do Ar - Air Quality Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            font-size: 1em;
+            font-weight: 600;
+            padding: 12px 20px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(-5px);
+        }
+
+        .header-section {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header-section h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .header-section p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 25px;
+        }
+
+        @media (max-width: 968px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card-title {
+            font-size: 1.8em;
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .card-subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .unit {
+            position: absolute;
+            right: 16px;
+            top: 38px;
+            color: #9ca3af;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .presets-section {
+            background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+            border: 2px dashed #d1d5db;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .presets-section h3 {
+            color: #374151;
+            font-size: 1em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            padding: 10px 18px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .preset-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.05em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-predict {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-predict:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-predict:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result-card {
+            position: sticky;
+            top: 20px;
+        }
+
+        .result-placeholder {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .result-placeholder-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .result-content {
+            display: none;
+        }
+
+        .result-content.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .prediction-badge {
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .prediction-badge-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .prediction-badge-label {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .prediction-badge-description {
+            font-size: 0.95em;
+            color: rgba(255,255,255,0.95);
+            line-height: 1.5;
+        }
+
+        .badge-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .badge-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .badge-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .recommendation-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-left: 4px solid #3b82f6;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .recommendation-box h4 {
+            color: #1e40af;
+            font-size: 1em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .recommendation-box p {
+            color: #1e40af;
+            line-height: 1.6;
+            font-size: 0.9em;
+        }
+
+        .values-summary {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .values-summary h4 {
+            color: #374151;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .value-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .value-label {
+            font-size: 0.75em;
+            color: #6b7280;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .value-number {
+            font-size: 1.1em;
+            color: #1f2937;
+            font-weight: 700;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid currentColor;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">
+            <span>←</span>
+            <span>Voltar ao Dashboard</span>
+        </a>
+
+        <div class="header-section">
+            <h1>Predição de Qualidade do Ar</h1>
+            <p>Simule condições atmosféricas e receba uma análise instantânea</p>
+        </div>
+
+        <div class="main-grid">
+            <!-- Formulário de Input -->
+            <div class="card">
+                <h2 class="card-title">Parâmetros Atmosféricos</h2>
+                <p class="card-subtitle">Insira os valores dos poluentes e condições meteorológicas</p>
+
+                <div id="alertContainer"></div>
+
+                <!-- Presets -->
+                <div class="presets-section">
+                    <h3>Cenários Pré-definidos</h3>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" onclick="loadPreset('good')">Ar Limpo</button>
+                        <button class="preset-btn" onclick="loadPreset('moderate')">Moderado</button>
+                        <button class="preset-btn" onclick="loadPreset('bad')">Poluído</button>
+                        <button class="preset-btn" onclick="loadPreset('clear')">Limpar</button>
+                    </div>
+                </div>
+
+                <form id="predictionForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="pm25">PM2.5</label>
+                            <input type="number" id="pm25" step="0.1" required>
+                            <span class="unit">µg/m³</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pm10">PM10</label>
+                            <input type="number" id="pm10" step="0.1" required>
+                            <span class="unit">µg/m³</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="no2">NO₂</label>
+                            <input type="number" id="no2" step="0.1" required>
+                            <span class="unit">ppb</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="so2">SO₂</label>
+                            <input type="number" id="so2" step="0.1" required>
+                            <span class="unit">ppb</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="co">CO</label>
+                            <input type="number" id="co" step="0.1" required>
+                            <span class="unit">ppm</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="temperature">Temperatura</label>
+                            <input type="number" id="temperature" step="0.1" required>
+                            <span class="unit">°C</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pressure">Pressão</label>
+                            <input type="number" id="pressure" step="0.1" required>
+                            <span class="unit">hPa</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="humidity">Umidade</label>
+                            <input type="number" id="humidity" step="0.1" min="0" max="100" required>
+                            <span class="unit">%</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="wind">Vento</label>
+                            <input type="number" id="wind" step="0.1" required>
+                            <span class="unit">m/s</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-predict" id="predictBtn">
+                        <span>Fazer Predição</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Resultado -->
+            <div class="card result-card">
+                <h2 class="card-title">Resultado da Análise</h2>
+
+                <div class="result-placeholder" id="placeholder">
+                    <div class="result-placeholder-icon">🎯</div>
+                    <p>Preencha os parâmetros e clique em "Fazer Predição" para ver o resultado</p>
+                </div>
+
+                <div class="result-content" id="resultContent">
+                    <div id="predictionBadge"></div>
+                    <div id="recommendation"></div>
+                    <div class="values-summary">
+                        <h4>Valores Analisados</h4>
+                        <div class="values-grid" id="valuesSummary"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const presets = {
+            good: {
+                pm25: 10, pm10: 20, no2: 15, so2: 5, co: 0.5,
+                temperature: 22, pressure: 1013, humidity: 60, wind: 3
+            },
+            moderate: {
+                pm25: 35, pm10: 65, no2: 45, so2: 25, co: 2.5,
+                temperature: 28, pressure: 1010, humidity: 70, wind: 2
+            },
+            bad: {
+                pm25: 150, pm10: 250, no2: 120, so2: 80, co: 8,
+                temperature: 32, pressure: 1005, humidity: 85, wind: 1
+            }
+        };
+
+        function loadPreset(type) {
+            if (type === 'clear') {
+                document.getElementById('predictionForm').reset();
+                return;
+            }
+
+            const preset = presets[type];
+            Object.keys(preset).forEach(key => {
+                document.getElementById(key).value = preset[key];
+            });
+        }
+
+        function showAlert(message, type = 'error') {
+            const container = document.getElementById('alertContainer');
+            container.innerHTML = `
+                <div class="alert alert-${type}">
+                    <span>${type === 'error' ? '⚠️' : 'ℹ️'}</span>
+                    <div>${message}</div>
+                </div>
+            `;
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btn = document.getElementById('predictBtn');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span><span>Analisando...</span>';
+
+            const data = {
+                pm25: parseFloat(document.getElementById('pm25').value),
+                pm10: parseFloat(document.getElementById('pm10').value),
+                no2: parseFloat(document.getElementById('no2').value),
+                so2: parseFloat(document.getElementById('so2').value),
+                co: parseFloat(document.getElementById('co').value),
+                temperature: parseFloat(document.getElementById('temperature').value),
+                pressure: parseFloat(document.getElementById('pressure').value),
+                humidity: parseFloat(document.getElementById('humidity').value),
+                wind: parseFloat(document.getElementById('wind').value)
+            };
+
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.detail || 'Erro na predição');
+                }
+
+                displayResult(result);
+
+            } catch (error) {
+                showAlert(error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+
+        function displayResult(result) {
+            document.getElementById('placeholder').style.display = 'none';
+            const content = document.getElementById('resultContent');
+            content.classList.add('show');
+
+            const badgeClass = `badge-${result.color}`;
+            const icons = { success: '✅', warning: '⚠️', danger: '🚨' };
+
+            document.getElementById('predictionBadge').innerHTML = `
+                <div class="prediction-badge ${badgeClass}">
+                    <div class="prediction-badge-icon">${icons[result.color]}</div>
+                    <div class="prediction-badge-label">${result.category}</div>
+                    <div class="prediction-badge-description">${result.description}</div>
+                </div>
+            `;
+
+            document.getElementById('recommendation').innerHTML = `
+                <div class="recommendation-box">
+                    <h4>Recomendação</h4>
+                    <p>${result.recommendation}</p>
+                </div>
+            `;
+
+            const values = result.input_values;
+            document.getElementById('valuesSummary').innerHTML = `
+                <div class="value-item">
+                    <div class="value-label">PM2.5</div>
+                    <div class="value-number">${values.pm25}</div>
+                </div>
+                <div class="value-item">
+                    <div class="value-label">PM10</div>
+                    <div class="value-number">${values.pm10}</div>
+                </div>
+                <div class="value-item">
+                    <div class="value-label">NO₂</div>
+                    <div class="value-number">${values.no2}</div>
+                </div>
+                <div class="value-item">
+                    <div class="value-label">SO₂</div>
+                    <div class="value-number">${values.so2}</div>
+                </div>
+                <div class="value-item">
+                    <div class="value-label">CO</div>
+                    <div class="value-number">${values.co}</div>
+                </div>
+                <div class="value-item">
+                    <div class="value-label">Temp</div>
+                    <div class="value-number">${values.temperature}°C</div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
