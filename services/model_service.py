@@ -18,8 +18,9 @@ class ModelService:
         return cls._instance
     
     def __init__(self):
-        self.model_key = "models/air_quality_model.joblib"
-        self.initialized = True
+        if not hasattr(self, 'initialized'):
+            self.model_key = "models/air_quality_model.joblib"
+            self.initialized = True
     
     async def load_model(self) -> bool:
         """
@@ -32,22 +33,22 @@ class ModelService:
             return True
         
         try:
-            # aws_service = AWSService()
+            aws_service = AWSService()
             
-            # if not aws_service.is_configured():
-            #     raise ValueError("AWS não configurado")
+            if not aws_service.is_configured():
+                raise ValueError("AWS não configurado")
             
-            # # Download do modelo do S3
-            # response = aws_service.s3_client.get_object(
-            #     Bucket=aws_service.bucket,
-            #     Key=self.model_key
-            # )
+            # Download do modelo do S3
+            response = aws_service.s3_client.get_object(
+                Bucket=aws_service.bucket,
+                Key=self.model_key
+            )
             
-            # model_bytes = response['Body'].read()
-            # model_buffer = io.BytesIO(model_bytes)
+            model_bytes = response['Body'].read()
+            model_buffer = io.BytesIO(model_bytes)
             
             # Carregar modelo
-            self._model = joblib.load(r'models\air_quality_model.joblib')
+            self._model = joblib.load(model_buffer)
             self._model_loaded = True
             
             print(f"✅ Modelo carregado do S3: {self.model_key}")

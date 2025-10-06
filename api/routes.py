@@ -167,22 +167,54 @@ async def predict_air_quality(input_data: PredictionInput):
     """
     try:
         model_service = ModelService()
-        
-        # Preparar dados para predição
-        features = [
-            input_data.pm25,
-            input_data.pm10,
-            input_data.no2,
-            input_data.so2,
-            input_data.co,
-            input_data.temperature,
-            input_data.pressure,
-            input_data.humidity,
-            input_data.wind
+
+        # Valores mínimos e máximos usados no treinamento
+        min_values = {
+            "pm25": 1, 
+            "pm10": 1, 
+            "no2": 0, 
+            "so2": 0, 
+            "co": 0,
+            "temperature": 1.5, 
+            "pressure": 991, 
+            "humidity": 22, 
+            "wind": 0
+        }
+
+        max_values = {
+            "pm25": 263.5, 
+            "pm10": 150, 
+            "no2": 22, 
+            "so2": 6, 
+            "co": 12,
+            "temperature": 37.5, 
+            "pressure": 1031, 
+            "humidity": 107, 
+            "wind": 8.5
+        }
+
+        # Obter os valores brutos
+        raw_features = {
+            "pm25": input_data.pm25,
+            "pm10": input_data.pm10,
+            "no2": input_data.no2,
+            "so2": input_data.so2,
+            "co": input_data.co,
+            "temperature": input_data.temperature,
+            "pressure": input_data.pressure,
+            "humidity": input_data.humidity,
+            "wind": input_data.wind
+        }
+
+        # Aplicar Min-Max Scaling
+        scaled_features = [
+            (raw_features[key] - min_values[key]) / (max_values[key] - min_values[key])
+            for key in raw_features
         ]
-        
-        prediction = await model_service.predict(features)
-        
+
+        # Fazer predição
+        prediction = await model_service.predict(scaled_features)
+
         # Mapear predição para categoria
         categories = {
             0: {
@@ -204,28 +236,18 @@ async def predict_air_quality(input_data: PredictionInput):
                 "recommendation": "Evite atividades ao ar livre. Mantenha janelas fechadas."
             }
         }
-        
+
         result = categories.get(prediction, categories[1])
-        
+
         return {
             "prediction": int(prediction),
             "category": result["label"],
             "description": result["description"],
             "color": result["color"],
             "recommendation": result["recommendation"],
-            "input_values": {
-                "pm25": input_data.pm25,
-                "pm10": input_data.pm10,
-                "no2": input_data.no2,
-                "so2": input_data.so2,
-                "co": input_data.co,
-                "temperature": input_data.temperature,
-                "pressure": input_data.pressure,
-                "humidity": input_data.humidity,
-                "wind": input_data.wind
-            }
+            "input_values": raw_features  # valores originais (não normalizados)
         }
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=500,
