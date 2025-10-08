@@ -1,66 +1,114 @@
-# Air Quality Predictor 🌍
+# 🌍 Air Quality Predictor
 
-Sistema Inteligente de Predição de Qualidade do Ar usando Machine Learning
+> Sistema inteligente de predição de qualidade do ar usando Machine Learning
 
-## 📋 Visão Geral
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
+[![AWS S3](https://img.shields.io/badge/AWS-S3-orange.svg)](https://aws.amazon.com/s3/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Sistema web completo para predição de qualidade do ar que integra:
-- **Machine Learning**: Modelo treinado armazenado em S3
-- **Data Collection**: Scraping em tempo real de estações globais
-- **Cloud Integration**: AWS S3 para storage de modelos e dados
-- **Interface Moderna**: Design responsivo com foco em UX
+Sistema web completo para predição de qualidade do ar que integra coleta de dados em tempo real, Machine Learning e armazenamento em nuvem com uma interface moderna e intuitiva.
 
-## 🎯 Funcionalidades Principais
+![Dashboard Preview](https://via.placeholder.com/800x400/667eea/ffffff?text=Air+Quality+Dashboard)
 
-### 1. Configuração AWS ⚙️
-- Interface intuitiva para configuração de credenciais
-- Validação em tempo real da conexão
-- Suporte para AWS Academy Labs (session tokens)
-- Feedback visual de status
+## 📋 Índice
 
-### 2. Predição de Qualidade do Ar 🎯
-- Input de 9 parâmetros atmosféricos
-- Predição instantânea usando modelo ML
-- Cenários pré-definidos para testes rápidos
-- Classificação em 3 níveis:
-  - **0: Saudável** - Ar de boa qualidade
-  - **1: Atenção** - Moderado, cuidado com grupos sensíveis
-  - **2: Perigoso** - Nocivo para todos
+- [Características](#-características)
+- [Tecnologias](#-tecnologias)
+- [Arquitetura](#-arquitetura)
+- [Instalação](#-instalação)
+- [Configuração](#%EF%B8%8F-configuração)
+- [Uso](#-uso)
+- [API](#-api)
+- [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Coleta de Dados](#-coleta-de-dados)
+- [Modelo de Predição](#-modelo-de-predição)
+- [Troubleshooting](#-troubleshooting)
+- [Roadmap](#-roadmap)
+- [Contribuindo](#-contribuindo)
+- [Licença](#-licença)
 
-### 3. Coleta de Dados 📡
-- Scraping de estações ao redor do mundo
+## ✨ Características
+
+### 🤖 Machine Learning
+- Modelo treinado com scikit-learn
+- Armazenamento e carregamento dinâmico do S3
+- Predição em tempo real
+- Classificação em 3 níveis de qualidade
+
+### 📊 Coleta de Dados
+- Web scraping de estações globais
 - Salvamento automático em S3 (formato Parquet)
 - Particionamento por data
 - Progress tracking em tempo real
 
-## 🏗️ Arquitetura
+### ☁️ Integração Cloud
+- AWS S3 para storage de modelos e dados
+- Suporte para AWS Academy Labs (session tokens)
+- Validação de credenciais em tempo real
+- Gerenciamento automático de conexão
+
+### 🎨 Interface Moderna
+- Design responsivo e intuitivo
+- Feedback visual de status
+- Cenários pré-definidos para testes
+- Dashboard centralizado
+
+## 🛠 Tecnologias
+
+- **Backend**: FastAPI, Python 3.8+
+- **Machine Learning**: Scikit-learn, Joblib
+- **Cloud**: AWS S3, Boto3
+- **Data Processing**: Pandas, PyArrow
+- **Web Scraping**: BeautifulSoup4, Requests
+- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
+
+## 🏗 Arquitetura
 
 ```
-air-quality-predictor/
-├── api/
-│   └── routes.py              # Endpoints da API
-├── services/
-│   ├── aws_service.py         # Gerenciamento S3
-│   ├── model_service.py       # ML Model Service (NOVO)
-│   └── scraper.py             # Web scraping
-├── templates/
-│   ├── index.html             # Dashboard principal (NOVO)
-│   ├── predict.html           # Interface de predição (NOVO)
-│   ├── collect.html           # Coleta de dados (NOVO)
-│   └── aws_form.html          # Config AWS (ATUALIZADO)
-├── main.py                    # App FastAPI (ATUALIZADO)
-├── .env                       # Variáveis de ambiente
-└── requirements.txt           # Dependências
+┌─────────────┐      ┌──────────────┐      ┌─────────────┐
+│   Browser   │ ───> │  FastAPI App │ ───> │   AWS S3    │
+│  Interface  │ <─── │   (Python)   │ <─── │   Storage   │
+└─────────────┘      └──────────────┘      └─────────────┘
+                            │
+                            ├── Model Service (ML)
+                            ├── Scraper Service
+                            └── AWS Service
 ```
 
-## 🚀 Instalação
+## 📥 Instalação
 
 ### Pré-requisitos
-- Python 3.8+
-- Conta AWS com S3
+
+- Python 3.8 ou superior
+- Conta AWS com acesso ao S3
 - Modelo treinado no formato `.joblib`
 
-### Dependências
+### Passo a passo
+
+1. **Clone o repositório**
+
+```bash
+git clone https://github.com/devrictrovato/mlet-airquality-app.git
+cd mlet-airquality-app
+```
+
+2. **Crie um ambiente virtual**
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# ou
+venv\Scripts\activate  # Windows
+```
+
+3. **Instale as dependências**
+
+```bash
+pip install -r requirements.txt
+```
+
+Ou instale manualmente:
 
 ```bash
 pip install fastapi uvicorn boto3 pandas pyarrow \
@@ -68,109 +116,189 @@ pip install fastapi uvicorn boto3 pandas pyarrow \
     joblib scikit-learn numpy
 ```
 
-### Arquivo .env (Opcional)
+## ⚙️ Configuração
+
+### 1. Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
 
 ```env
-AWS_ACCESS_KEY_ID=your_key
-AWS_SECRET_ACCESS_KEY=your_secret
-AWS_SESSION_TOKEN=your_token
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+AWS_SESSION_TOKEN=your_session_token  # Opcional, para AWS Lab
 AWS_REGION=us-east-1
-S3_BUCKET=your-bucket
+S3_BUCKET=your-bucket-name
 S3_PREFIX=raw
 ```
 
-## 📦 Modelo ML
+### 2. Modelo ML no S3
 
-O modelo deve estar no S3 no caminho:
+Faça upload do modelo treinado para o S3:
+
 ```
 s3://your-bucket/models/air_quality_model.joblib
 ```
 
-### Features Esperadas (ordem)
-1. `pm25` - Material particulado 2.5 (µg/m³)
-2. `pm10` - Material particulado 10 (µg/m³)
-3. `no2` - Dióxido de nitrogênio (ppb)
-4. `so2` - Dióxido de enxofre (ppb)
-5. `co` - Monóxido de carbono (ppm)
-6. `temperature` - Temperatura (°C)
-7. `pressure` - Pressão atmosférica (hPa)
-8. `humidity` - Umidade relativa (%)
-9. `wind` - Velocidade do vento (m/s)
+### 3. Estrutura no S3
 
-### Classes de Saída
-- `0`: Saudável
-- `1`: Atenção
-- `2`: Perigoso
+```
+s3://your-bucket/
+├── models/
+│   └── air_quality_model.joblib
+└── raw/
+    └── date=YYYY-MM-DD/
+        └── *.snappy.parquet
+```
 
-## 🎮 Como Usar
+## 🚀 Uso
 
-### 1. Iniciar a Aplicação
+### Iniciando o servidor
 
 ```bash
 python main.py
 ```
 
-Acesse: `http://localhost:8000`
+Ou com reload automático para desenvolvimento:
 
-### 2. Configurar AWS
+```bash
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
 
-1. Clique em "Configurar AWS"
-2. Insira as credenciais do AWS Lab
-3. Teste a conexão
-4. Salve
+Acesse: **http://localhost:8000**
 
-### 3. Fazer Predições
+### Fluxo de Uso
 
-1. Clique em "Fazer Predição"
-2. Insira os valores dos parâmetros
-   - Use os presets para testes rápidos
-3. Clique em "Fazer Predição"
-4. Analise o resultado e recomendações
+#### 1️⃣ Configurar AWS
 
-### 4. Coletar Dados (Opcional)
+1. Clique em **"Configurar AWS"** no dashboard
+2. Insira suas credenciais do AWS (ou do AWS Academy Lab)
+3. Clique em **"Testar Conexão"**
+4. Se OK, clique em **"Salvar Configuração"**
 
-1. Configure o AWS primeiro
-2. Clique em "Coletar Dados"
-3. Clique em "Iniciar Coleta"
-4. Aguarde o processamento
-5. Dados salvos automaticamente no S3
+#### 2️⃣ Fazer Predição
 
-## 🔌 API Endpoints
+1. Clique em **"Fazer Predição"**
+2. Insira os valores dos 9 parâmetros atmosféricos:
+   - PM2.5, PM10, NO₂, SO₂, CO
+   - Temperatura, Pressão, Umidade, Vento
+3. Ou use um dos **presets** para teste rápido
+4. Clique em **"Fazer Predição"**
+5. Analise o resultado e as recomendações
 
-### Configuração
-- `POST /api/aws/configure` - Configurar credenciais
-- `GET /api/aws/status` - Verificar status AWS
+#### 3️⃣ Coletar Dados
 
-### Predição
-- `POST /api/predict` - Fazer predição
-- `GET /api/model/status` - Status do modelo
+1. Certifique-se de que o AWS está configurado
+2. Clique em **"Coletar Dados"**
+3. Clique em **"Iniciar Coleta"**
+4. Acompanhe o progresso em tempo real
+5. Dados serão salvos automaticamente no S3
 
-### Coleta de Dados
-- `POST /api/stations/collect` - Coletar dados
+## 🔌 API
 
-## 🎨 Design Principles
+### Endpoints Disponíveis
 
-### UX/UI Focado em:
-1. **Clareza**: Informações organizadas hierarquicamente
-2. **Feedback**: Status em tempo real de todas operações
-3. **Acessibilidade**: Design responsivo e intuitivo
-4. **Confiança**: Validações e mensagens claras
-5. **Eficiência**: Presets e atalhos para ações comuns
+#### AWS Configuration
 
-### Paleta de Cores
-- **Primary**: #667eea (Azul-roxo)
-- **Secondary**: #764ba2 (Roxo)
-- **Success**: #10b981 (Verde)
-- **Warning**: #f59e0b (Amarelo)
-- **Danger**: #ef4444 (Vermelho)
+**POST** `/api/aws/configure`
+```json
+{
+  "aws_access_key": "string",
+  "aws_secret_key": "string",
+  "aws_session_token": "string",  // opcional
+  "aws_region": "string",
+  "s3_bucket": "string"
+}
+```
 
-## 📊 Estrutura de Dados
+**GET** `/api/aws/status`
+```json
+{
+  "configured": true,
+  "bucket": "my-bucket",
+  "region": "us-east-1"
+}
+```
+
+#### Prediction
+
+**POST** `/api/predict`
+```json
+{
+  "pm25": 35.5,
+  "pm10": 68.2,
+  "no2": 28.4,
+  "so2": 10.1,
+  "co": 1.5,
+  "temperature": 22.0,
+  "pressure": 1013.0,
+  "humidity": 60.0,
+  "wind": 3.5
+}
+```
+
+**Response:**
+```json
+{
+  "prediction": 1,
+  "quality_level": "Atenção",
+  "description": "Moderado, cuidado com grupos sensíveis",
+  "confidence": 0.87
+}
+```
+
+#### Model Status
+
+**GET** `/api/model/status`
+```json
+{
+  "loaded": true,
+  "source": "s3://bucket/models/air_quality_model.joblib",
+  "last_loaded": "2025-10-07T10:30:00"
+}
+```
+
+#### Data Collection
+
+**POST** `/api/stations/collect`
+```json
+{
+  "status": "success",
+  "stations_collected": 150,
+  "saved_to": "s3://bucket/raw/date=2025-10-07/"
+}
+```
+
+## 📁 Estrutura do Projeto
+
+```
+air-quality-predictor/
+├── api/
+│   └── routes.py              # Endpoints da API
+├── services/
+│   ├── aws_service.py         # Gerenciamento S3
+│   ├── model_service.py       # ML Model Service
+│   └── scraper.py             # Web scraping
+├── templates/
+│   ├── index.html             # Dashboard principal
+│   ├── predict.html           # Interface de predição
+│   ├── collect.html           # Coleta de dados
+│   └── aws_form.html          # Configuração AWS
+├── static/
+│   ├── css/
+│   └── js/
+├── main.py                    # Aplicação FastAPI
+├── .env                       # Variáveis de ambiente
+├── requirements.txt           # Dependências Python
+└── README.md                  # Este arquivo
+```
+
+## 📡 Coleta de Dados
 
 ### Formato dos Dados Coletados
 
 ```json
 {
-  "date": "2025-10-05T12:00:00",
+  "date": "2025-10-07T12:00:00",
   "station": "São Paulo - Pinheiros",
   "country": "brazil",
   "state": "sao-paulo",
@@ -188,70 +316,144 @@ Acesse: `http://localhost:8000`
 }
 ```
 
-### Particionamento S3
+### Particionamento no S3
 
 ```
 s3://bucket/raw/
-  └── date=2025-10-05/
-      ├── aqi-data-10-30-00.snappy.parquet
-      ├── aqi-data-11-00-00.snappy.parquet
-      └── aqi-data-12-00-00.snappy.parquet
+└── date=2025-10-07/
+    ├── aqi-data-10-30-00.snappy.parquet
+    ├── aqi-data-11-00-00.snappy.parquet
+    └── aqi-data-12-00-00.snappy.parquet
 ```
+
+## 🎯 Modelo de Predição
+
+### Parâmetros de Entrada
+
+| Parâmetro | Descrição | Unidade |
+|-----------|-----------|---------|
+| `pm25` | Material particulado 2.5 | µg/m³ |
+| `pm10` | Material particulado 10 | µg/m³ |
+| `no2` | Dióxido de nitrogênio | ppb |
+| `so2` | Dióxido de enxofre | ppb |
+| `co` | Monóxido de carbono | ppm |
+| `temperature` | Temperatura | °C |
+| `pressure` | Pressão atmosférica | hPa |
+| `humidity` | Umidade relativa | % |
+| `wind` | Velocidade do vento | m/s |
+
+### Classes de Predição
+
+| Classe | Nível | Descrição |
+|--------|-------|-----------|
+| **0** | 🟢 Saudável | Ar de boa qualidade |
+| **1** | 🟡 Atenção | Moderado, cuidado com grupos sensíveis |
+| **2** | 🔴 Perigoso | Nocivo para todos |
+
+### Presets Disponíveis
+
+- **Ar Saudável**: Condições ideais
+- **Moderado**: Valores médios de poluição
+- **Perigoso**: Alta concentração de poluentes
 
 ## 🔧 Troubleshooting
 
 ### Modelo não carrega
-- Verifique o caminho no S3
+
+**Problema**: Erro ao carregar modelo do S3
+
+**Solução**:
+- Verifique o caminho: `s3://bucket/models/air_quality_model.joblib`
 - Confirme que o bucket está acessível
 - Verifique as permissões IAM
 
-### Erro de credenciais AWS
-- Session tokens do AWS Lab expiram
-- Gere novas credenciais no Lab
+### Credenciais AWS expiradas
+
+**Problema**: Erro 403 ao acessar S3
+
+**Solução**:
+- Session tokens do AWS Lab expiram após algumas horas
+- Gere novas credenciais no AWS Academy Lab
 - Reconfigure na interface
 
-### Predição falha
+### Erro na predição
+
+**Problema**: Predição falha ou retorna erro
+
+**Solução**:
 - Verifique se todos os 9 campos estão preenchidos
-- Confirme que os valores são numéricos
+- Confirme que os valores são numéricos válidos
 - Teste com os presets primeiro
 
-## 📈 Melhorias Futuras
+### Coleta de dados falha
 
+**Problema**: Scraper não coleta dados
+
+**Solução**:
+- Verifique sua conexão com internet
+- Confirme que o AWS está configurado
+- Verifique os logs do servidor
+
+## 🗺 Roadmap
+
+### Versão 3.1
 - [ ] Histórico de predições
 - [ ] Gráficos e visualizações
+- [ ] Export de resultados (CSV, JSON)
+
+### Versão 3.2
 - [ ] API de batch prediction
-- [ ] Export de resultados
 - [ ] Autenticação de usuários
 - [ ] Dashboard de métricas do modelo
 
-## 👨‍💻 Desenvolvimento
+### Versão 4.0
+- [ ] Retreinamento automático
+- [ ] Múltiplos modelos (A/B testing)
+- [ ] Alertas por email/SMS
+- [ ] App mobile (React Native)
 
-### Executar em modo dev
+## 🤝 Contribuindo
 
-```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
+Contribuições são bem-vindas! Áreas de interesse:
 
-### Estrutura dos Services
+- ✨ Melhorias de UI/UX
+- ⚡ Otimizações de performance
+- 🆕 Novos features
+- 🧪 Testes automatizados
+- 📚 Documentação
 
-**aws_service.py**: Singleton para gerenciar S3
-**model_service.py**: Singleton para carregar e usar o modelo
-**scraper.py**: Coleta de dados de estações
+### Como Contribuir
 
-## 📝 Licença
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona MinhaFeature'`)
+4. Push para a branch (`git push origin feature/MinhaFeature`)
+5. Abra um Pull Request
 
-Este projeto foi desenvolvido para fins educacionais.
+## 📄 Licença
 
-## 🤝 Contribuições
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-Contribuições são bem-vindas! Areas de interesse:
-- Melhorias de UI/UX
-- Otimizações de performance
-- Novos features
-- Testes automatizados
+---
+
+## 👨‍💻 Autor
+
+Desenvolvido por **devrictrovato**
+
+[![GitHub](https://img.shields.io/badge/GitHub-devrictrovato-black?logo=github)](https://github.com/devrictrovato)
+
+---
+
+## 🙏 Agradecimentos
+
+- Dados de qualidade do ar: [World Air Quality Index](https://waqi.info/)
+- AWS Academy por fornecer recursos educacionais
+- Comunidade FastAPI e Scikit-learn
 
 ---
 
 **Versão**: 3.0.0  
 **Última atualização**: Outubro 2025  
 **Stack**: FastAPI + Python + AWS S3 + Scikit-learn
+
+⭐ Se este projeto foi útil, considere dar uma estrela no GitHub!
